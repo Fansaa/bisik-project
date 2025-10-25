@@ -444,7 +444,7 @@ Jangan gunakan simbol, emoji, atau format lain selain teks biasa.`
               Kembali
             </motion.button>
             <div className="text-xs md:text-sm text-white/60 bg-white/5 p-2 rounded-lg border border-white/10">
-              💡 Arahkan kamera ke objek yang ingin dianalisis, kemudian klik "Ambil Gambar"
+              Arahkan kamera ke objek yang ingin dianalisis, kemudian klik "Ambil Gambar"
             </div>
             <div className="relative rounded-xl overflow-hidden bg-black/40 w-full">
               <video ref={videoRef} autoPlay playsInline muted className="w-full h-auto object-cover" />
@@ -528,7 +528,7 @@ Jangan gunakan simbol, emoji, atau format lain selain teks biasa.`
               Kembali
             </motion.button>
             <div className="text-xs md:text-sm text-white/60 bg-white/5 p-2 rounded-lg border border-white/10">
-              💡 Pilih gambar dari perangkat Anda untuk dianalisis
+              Pilih gambar dari perangkat Anda untuk dianalisis
             </div>
             <input ref={fileInputRef} type="file" accept="image/*" onChange={handleFileChange} className="hidden" />
             <motion.button
@@ -592,13 +592,13 @@ Jangan gunakan simbol, emoji, atau format lain selain teks biasa.`
               Kembali
             </motion.button>
             <div className="text-xs md:text-sm text-white/60 bg-white/5 p-2 rounded-lg border border-white/10">
-              💡 Deskripsikan objek atau adegan yang ingin Anda lihat. Contoh: "Anak-anak bermain di taman"
+              Deskripsikan objek atau adegan yang ingin Anda lihat. Contoh: Kucing berwarna putih"
             </div>
             <input
               type="text"
               value={textInput}
               onChange={(e) => setTextInput(e.target.value)}
-              placeholder="Contoh: Kucing berwarna putih sedang bermain"
+              placeholder=""
               className="w-full p-2 rounded-lg bg-white/10 border border-white/20 text-white placeholder-white/50 focus:outline-none focus:border-blue-400 text-xs md:text-sm"
             />
             {generatedImage && (
