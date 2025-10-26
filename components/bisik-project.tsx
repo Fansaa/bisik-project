@@ -25,6 +25,8 @@ export default function BisikProject() {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const streamRef = useRef<MediaStream | null>(null)
+  const audioRef = useRef<HTMLAudioElement | null>(null)
+  const audioUrlRef = useRef<string | null>(null)
 
   useEffect(() => {
     return () => {
@@ -32,8 +34,21 @@ export default function BisikProject() {
         streamRef.current.getTracks().forEach((track) => track.stop())
         streamRef.current = null
       }
+      cleanupAudio()
     }
   }, [])
+
+  const cleanupAudio = () => {
+    if (audioRef.current) {
+      audioRef.current.pause()
+      audioRef.current.src = ""
+      audioRef.current = null
+    }
+    if (audioUrlRef.current) {
+      URL.revokeObjectURL(audioUrlRef.current)
+      audioUrlRef.current = null
+    }
+  }
 
   const buildPrompt =
     () => `Kamu adalah sistem pendeteksi objek yang akan membantu anak-anak berkebutuhan khusus memahami dunia di sekitarnya.
@@ -76,7 +91,7 @@ Jangan gunakan simbol, emoji, atau format lain selain teks biasa.`
           videoRef.current.srcObject = stream
           videoRef.current.onloadedmetadata = () => {
             videoRef.current?.play().catch((err) => {
-              console.error("[v0] Error playing video:", err)
+              console.error("Error playing video:", err)
               setCameraError("Gagal memutar video kamera")
             })
           }
@@ -113,7 +128,7 @@ Jangan gunakan simbol, emoji, atau format lain selain teks biasa.`
     fileInputRef.current && (fileInputRef.current.value = "")
     setLastResponseText("")
     setIsPlaying(false)
-    speechSynthesis.cancel()
+    cleanupAudio()
     setCurrentScreen("options")
   }
 
@@ -211,33 +226,24 @@ Jangan gunakan simbol, emoji, atau format lain selain teks biasa.`
     setOutput("Mencari gambar...")
 
     try {
-      console.log("[v0] Generate gambar dimulai dengan deskripsi:", desc)
-
       const response = await fetch("/api/generate-image", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ query: desc }),
       })
 
-      console.log("[v0] Response status:", response.status)
       const data = await response.json()
-      console.log("[v0] Response data:", data)
 
       if (!response.ok || !data.success) {
-        const errorMsg = data.error || `Error ${response.status}`
-        console.error("[v0] API Error:", errorMsg)
         setOutput("❌ Gambar tidak bisa digenerate")
         setIsLoading(false)
         return
       }
 
       if (data.imageUrl) {
-        console.log("[v0] Gambar berhasil ditemukan")
         setGeneratedImage(data.imageUrl)
-
         setOutput("Menganalisis gambar...")
 
-        // Convert image URL to base64 untuk analisis
         const img = new Image()
         img.crossOrigin = "anonymous"
         img.onload = async () => {
@@ -292,38 +298,79 @@ Jangan gunakan simbol, emoji, atau format lain selain teks biasa.`
         }
         img.src = data.imageUrl
       } else {
-        console.warn("[v0] Tidak ada gambar yang ditemukan")
         setOutput("❌ Gambar tidak bisa digenerate")
         setIsLoading(false)
       }
     } catch (error) {
-      const errorMsg = (error as Error).message
-      console.error("[v0] Exception:", errorMsg)
       setOutput("❌ Gambar tidak bisa digenerate")
       setIsLoading(false)
     }
   }
 
-  const speak = () => {
+  const speak = async () => {
     if (!lastResponseText) return
-    const utterance = new SpeechSynthesisUtterance(lastResponseText)
-    utterance.lang = "id-ID"
-    utterance.rate = 0.9
-    utterance.pitch = 1.1
-    speechSynthesis.cancel()
-    speechSynthesis.speak(utterance)
+
+    // Stop audio yang sedang berjalan jika ada
+    if (audioRef.current) {
+      stop()
+    }
+
     setIsPlaying(true)
-    utterance.onend = () => setIsPlaying(false)
+
+    try {
+      const response = await fetch("https://f6fba94d262b.ngrok-free.app/tts", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          text: lastResponseText,
+          language: "id",
+        }),
+      })
+
+      if (!response.ok) {
+        throw new Error("Failed to generate speech")
+      }
+
+      const audioBlob = await response.blob()
+      const audioUrl = URL.createObjectURL(audioBlob)
+      audioUrlRef.current = audioUrl
+
+      const audio = new Audio(audioUrl)
+      audioRef.current = audio
+
+      audio.onended = () => {
+        setIsPlaying(false)
+        cleanupAudio()
+      }
+
+      audio.onerror = (error) => {
+        console.error("Audio playback error:", error)
+        setIsPlaying(false)
+        cleanupAudio()
+      }
+
+      await audio.play()
+    } catch (error) {
+      console.error("TTS Error:", error)
+      setIsPlaying(false)
+      setOutput("❌ Gagal memutar audio. Pastikan TTS server berjalan di http://localhost:5000")
+      cleanupAudio()
+    }
   }
 
   const stop = () => {
-    speechSynthesis.cancel()
+    if (audioRef.current) {
+      audioRef.current.pause()
+      audioRef.current.currentTime = 0
+    }
     setIsPlaying(false)
+    cleanupAudio()
   }
 
   const reset = () => {
-    speechSynthesis.cancel()
-    setIsPlaying(false)
+    stop()
     setCapturedImage(null)
     setUploadedImage(null)
     setGeneratedImage(null)
@@ -657,7 +704,8 @@ Jangan gunakan simbol, emoji, atau format lain selain teks biasa.`
           </motion.button>
           <motion.button
             onClick={stop}
-            className="flex-1 flex items-center justify-center gap-1 md:gap-2 p-2 rounded-lg bg-amber-500/30 hover:bg-amber-500/40 text-amber-200 font-semibold text-xs md:text-sm border border-amber-400/30"
+            disabled={!isPlaying}
+            className="flex-1 flex items-center justify-center gap-1 md:gap-2 p-2 rounded-lg bg-amber-500/30 hover:bg-amber-500/40 text-amber-200 font-semibold text-xs md:text-sm disabled:opacity-50 border border-amber-400/30"
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             aria-label="Hentikan pemutaran"
