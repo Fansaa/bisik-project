@@ -7,7 +7,7 @@ import { motion } from "motion/react"
 
 const API_KEY = "AIzaSyDnFqvH-qCyLlY6JoTFRxBSuOYeIR0623Q"
 
-type Screen = "start" | "options" | "home" | "camera" | "upload" | "text"
+type Screen = "start" | "options" | "home" | "camera" | "upload" | "text" | "voice"
 
 export default function BisikProject() {
   const [currentScreen, setCurrentScreen] = useState<Screen>("start")
@@ -20,6 +20,11 @@ export default function BisikProject() {
   const [textInput, setTextInput] = useState("")
   const [lastResponseText, setLastResponseText] = useState("")
   const [cameraError, setCameraError] = useState("")
+  const [isRecording, setIsRecording] = useState(false)
+  const recognitionRef = useRef<any>(null)
+  const [errorMessage, setErrorMessage] = useState<string | null>(null)
+
+
 
   const videoRef = useRef<HTMLVideoElement>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
@@ -37,6 +42,11 @@ export default function BisikProject() {
       cleanupAudio()
     }
   }, [])
+
+  const showError = (msg: string) => {
+    setErrorMessage(msg)
+    setTimeout(() => setErrorMessage(null), 4000)
+  }
 
   const cleanupAudio = () => {
     if (audioRef.current) {
@@ -100,7 +110,7 @@ Jangan gunakan simbol, emoji, atau format lain selain teks biasa.`
     } catch (error) {
       const errorMsg = (error as Error).message
       setCameraError(`Tidak bisa membuka kamera: ${errorMsg}`)
-      setOutput(`Tidak bisa membuka kamera: ${errorMsg}`)
+      showError("Kamera tidak bisa dibuka. Periksa izin kamera Anda.")
       setCurrentScreen("options")
     }
   }
@@ -131,6 +141,117 @@ Jangan gunakan simbol, emoji, atau format lain selain teks biasa.`
     cleanupAudio()
     setCurrentScreen("options")
   }
+  const startSpeechRecognition = () => {
+    const SpeechRecognition =
+      (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition
+
+    if (!SpeechRecognition) {
+      showError("Browser Anda tidak mendukung input suara.")
+      setOutput("Silakan gunakan metode lain.")
+      return
+    }
+
+    const recognition = new SpeechRecognition()
+    recognition.lang = "id-ID"
+    recognition.interimResults = false
+    recognition.maxAlternatives = 1
+
+    recognitionRef.current = recognition
+
+    recognition.onstart = () => {
+      setIsRecording(true)
+      setOutput("Silahkan bicara...")
+    }
+
+    recognition.onresult = (event: any) => {
+      const transcript = event.results[0][0].transcript
+      setTextInput(transcript)
+      setOutput(`Anda berkata: "${transcript}". Klik Generate untuk melanjutkan.`)
+    }
+
+    recognition.onerror = () => {
+      showError("Gagal mengenali suara. Coba bicara lebih jelas.")
+    }
+
+    recognition.onend = () => {
+      setIsRecording(false)
+    }
+
+    recognition.start()
+  }
+
+  const stopSpeechRecognition = () => {
+    recognitionRef.current?.stop()
+    setIsRecording(false)
+    setOutput("Berhenti mendengarkan...")
+  }
+
+  const handleVoiceGenerate = async () => {
+    const desc = textInput.trim()
+    if (!desc) {
+      setOutput("Silahkan ucapkan sesuatu terlebih dahulu.")
+      return
+    }
+
+    setIsLoading(true)
+    setOutput("Menghasilkan gambar dari suara...")
+
+    try {
+      const response = await fetch("/api/generate-image", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ query: desc }),
+      })
+
+      const data = await response.json()
+
+      if (!response.ok || !data.success) {
+        showError("Gambar tidak dapat dihasilkan dari suara.")
+        setIsLoading(false)
+        return
+      }
+
+      if (data.imageUrl) {
+        setGeneratedImage(data.imageUrl)
+        setOutput("Gambar berhasil dihasilkan ✅ Klik Analisis untuk melihat penjelasan")
+
+        // Belum analisis sampai user klik tombol analisis
+      }
+    } catch (error) {
+      setOutput("❌ Terjadi kesalahan saat generate gambar")
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const handleVoiceAnalyze = async () => {
+    if (!generatedImage) return
+
+    setIsLoading(true)
+    setOutput("Menganalisis gambar...")
+
+    const img = new Image()
+    img.crossOrigin = "anonymous"
+    img.onload = async () => {
+      const canvas = document.createElement("canvas")
+      canvas.width = img.width
+      canvas.height = img.height
+      const ctx = canvas.getContext("2d")
+      if (!ctx) return
+
+      ctx.drawImage(img, 0, 0)
+      const base64 = canvas.toDataURL("image/png").split(",")[1]
+
+      try {
+        await sendToGemini(base64)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+    img.src = generatedImage
+  }
+
+
 
   const capturePhoto = () => {
     if (videoRef.current && canvasRef.current) {
@@ -258,7 +379,7 @@ Jangan gunakan simbol, emoji, atau format lain selain teks biasa.`
             try {
               const analysisResponse = await fetch(
                 "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=" +
-                  API_KEY,
+                API_KEY,
                 {
                   method: "POST",
                   headers: { "Content-Type": "application/json" },
@@ -318,7 +439,7 @@ Jangan gunakan simbol, emoji, atau format lain selain teks biasa.`
     setIsPlaying(true)
 
     try {
-      const response = await fetch("https://f6fba94d262b.ngrok-free.app/tts", {
+      const response = await fetch("https://468960b7c870.ngrok-free.app/tts", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -389,6 +510,16 @@ Jangan gunakan simbol, emoji, atau format lain selain teks biasa.`
     <div className="w-full flex flex-col gap-3 md:gap-4">
       <div className="text-center">
         <h2 className="text-3xl md:text-4xl font-bold text-white">BISIK</h2>
+        {errorMessage && (
+          <motion.div
+            initial={{ opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mb-2 p-2 rounded-lg bg-red-500/20 border border-red-400/40 text-red-300 text-xs md:text-sm text-center"
+          >
+            ⚠️ {errorMessage}
+          </motion.div>
+        )}
+
       </div>
 
       <div className="w-full">
@@ -476,8 +607,113 @@ Jangan gunakan simbol, emoji, atau format lain selain teks biasa.`
                 </div>
               </div>
             </motion.div>
+
+            <motion.div
+              onClick={() => setCurrentScreen("voice")}
+              className="p-3 md:p-4 rounded-xl bg-purple-500/20 hover:bg-purple-500/30 border border-purple-400/30 hover:border-purple-400/50 cursor-pointer transition-all"
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+            >
+              <div className="flex items-start gap-3">
+                <Volume2 className="w-5 h-5 md:w-6 md:h-6 text-purple-300 flex-shrink-0 mt-1" />
+                <div className="flex-1">
+                  <h3 className="text-purple-200 font-semibold text-sm md:text-base">Gunakan Suara</h3>
+                  <p className="text-purple-100/70 text-xs md:text-sm mt-1">
+                    Ucapkan deskripsi objek untuk menghasilkan gambar dan penjelasannya.
+                  </p>
+                </div>
+              </div>
+            </motion.div>
+
+          </motion.div>
+
+
+        )}
+
+        {currentScreen === "voice" && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-3">
+            <motion.button
+              onClick={goBackToOptions}
+              className="flex items-center justify-center gap-2 p-2 rounded-lg bg-white/10 hover:bg-white/20 text-white"
+            >
+              <ArrowLeft className="w-4 h-4" /> Kembali
+            </motion.button>
+
+            <div className="text-xs md:text-sm text-white/60 bg-white/5 p-2 rounded-lg border border-white/10">
+              Tekan tombol untuk mulai merekam suara, ucapkan deskripsi objek.
+            </div>
+
+            <motion.button
+              onClick={isRecording ? stopSpeechRecognition : startSpeechRecognition}
+              className={`w-full flex items-center justify-center gap-2 p-3 rounded-xl
+      border ${isRecording ? "bg-red-500/30 border-red-400/50" : "bg-purple-500/30 border-purple-400/50"}
+      text-white font-semibold text-xs md:text-sm`}
+            >
+              <Volume2 className="w-5 h-5" />
+              {isRecording ? "Berhenti Merekam" : "Mulai Merekam"}
+            </motion.button>
+
+            {textInput && (
+              <motion.div
+                initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+                className="bg-white/10 border border-white/20 p-3 rounded-lg text-white/90 text-xs md:text-sm"
+              >
+                🎙️ Hasil suara: <strong>{textInput}</strong>
+              </motion.div>
+            )}
+
+            {textInput && !generatedImage && (
+              <motion.button
+                onClick={handleVoiceGenerate}
+                disabled={isLoading}
+                className="w-full flex items-center justify-center gap-2 p-2 rounded-lg
+        bg-blue-500/30 hover:bg-blue-500/40 text-blue-200
+        border border-blue-400/30 disabled:opacity-50"
+              >
+                {isLoading ? "Menghasilkan..." : "Generate Gambar"}
+              </motion.button>
+            )}
+
+            {generatedImage && (
+              <motion.img
+                src={generatedImage}
+                alt="Generated Image"
+                className="w-full h-auto object-contain rounded-xl"
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+              />
+            )}
+
+            {generatedImage && (
+              <motion.button
+                onClick={handleVoiceAnalyze}
+                disabled={isLoading}
+                className="w-full flex items-center justify-center gap-2 p-2 rounded-lg bg-green-500/30 hover:bg-green-500/40 text-green-200 border border-green-400/30"
+              >
+                {isLoading ? "Menganalisis..." : "Analisis Gambar"}
+              </motion.button>
+            )}
+
+            {(generatedImage || isLoading || lastResponseText) && (
+              <motion.div
+                className="mt-3 md:mt-4 p-2 md:p-3 rounded-lg bg-white/8 border border-white/20"
+                initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+              >
+                {isLoading ? (
+                  <div className="flex items-center gap-2 text-white/70">
+                    <Loader className="w-4 h-4 animate-spin" />
+                    <span className="text-xs md:text-sm">{output}</span>
+                  </div>
+                ) : (
+                  <p className="text-white/90 text-xs md:text-sm whitespace-pre-wrap">{output}</p>
+                )}
+              </motion.div>
+            )}
           </motion.div>
         )}
+
+
+
 
         {currentScreen === "camera" && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-2 md:space-y-3">
