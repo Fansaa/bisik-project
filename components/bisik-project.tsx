@@ -130,17 +130,21 @@ Jangan gunakan simbol, emoji, atau format lain selain teks biasa.`
       streamRef.current.getTracks().forEach((track) => track.stop())
       streamRef.current = null
     }
+
     setCapturedImage(null)
     setUploadedImage(null)
     setGeneratedImage(null)
     setCameraError("")
     setTextInput("")
-    fileInputRef.current && (fileInputRef.current.value = "")
     setLastResponseText("")
+    setOutput("Hasil akan muncul di sini...")
     setIsPlaying(false)
+    setIsLoading(false)
     cleanupAudio()
+    if (fileInputRef.current) fileInputRef.current.value = ""
     setCurrentScreen("options")
   }
+
   const startSpeechRecognition = () => {
     const SpeechRecognition =
       (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition
