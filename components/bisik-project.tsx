@@ -166,7 +166,8 @@ Jangan gunakan simbol, emoji, atau format lain selain teks biasa.`
     recognition.onresult = (event: any) => {
       const transcript = event.results[0][0].transcript
       setTextInput(transcript)
-      setOutput(`Anda berkata: "${transcript}". Klik Generate untuk melanjutkan.`)
+      setOutput(`Mendengar: "${transcript}". Mencari gambar...`)
+      handleVoiceFlow(transcript)
     }
 
     recognition.onerror = () => {
@@ -185,6 +186,50 @@ Jangan gunakan simbol, emoji, atau format lain selain teks biasa.`
     setIsRecording(false)
     setOutput("Berhenti mendengarkan...")
   }
+
+  const handleVoiceFlow = async (desc: string) => {
+    setIsLoading(true)
+
+    try {
+      const generateResponse = await fetch("/api/generate-image", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ query: desc }),
+      })
+
+      const imageData = await generateResponse.json()
+
+      if (!imageData.success || !imageData.imageUrl) {
+        showError("❌ Tidak dapat menemukan gambar yang sesuai suara.")
+        setIsLoading(false)
+        return
+      }
+
+      setGeneratedImage(imageData.imageUrl)
+      setOutput("Gambar ditemukan! Menganalisis...")
+
+
+      const img = new Image()
+      img.crossOrigin = "anonymous"
+      img.onload = async () => {
+        const canvas = document.createElement("canvas")
+        const ctx = canvas.getContext("2d")
+        canvas.width = img.width
+        canvas.height = img.height
+        ctx?.drawImage(img, 0, 0)
+        const base64 = canvas.toDataURL("image/png").split(",")[1]
+
+        await sendToGemini(base64)
+        setIsLoading(false)
+      }
+      img.src = imageData.imageUrl
+
+    } catch {
+      showError("❌ Suara tidak bisa diproses")
+      setIsLoading(false)
+    }
+  }
+
 
   const handleVoiceGenerate = async () => {
     const desc = textInput.trim()
@@ -632,15 +677,15 @@ Jangan gunakan simbol, emoji, atau format lain selain teks biasa.`
 
         {currentScreen === "voice" && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-3">
-            <motion.button
-              onClick={goBackToOptions}
-              className="flex items-center justify-center gap-2 p-2 rounded-lg bg-white/10 hover:bg-white/20 text-white"
-            >
+
+            <motion.button onClick={goBackToOptions}
+              className="flex items-center justify-center gap-2 p-2 rounded-lg bg-white/10 hover:bg-white/20 text-white
+      font-semibold text-xs md:text-sm border border-white/20">
               <ArrowLeft className="w-4 h-4" /> Kembali
             </motion.button>
 
             <div className="text-xs md:text-sm text-white/60 bg-white/5 p-2 rounded-lg border border-white/10">
-              Tekan tombol untuk mulai merekam suara, ucapkan deskripsi objek.
+              Klik “Mulai Merekam”, ucapkan deskripsi objek.
             </div>
 
             <motion.button
@@ -648,57 +693,58 @@ Jangan gunakan simbol, emoji, atau format lain selain teks biasa.`
               className={`w-full flex items-center justify-center gap-2 p-3 rounded-xl
       border ${isRecording ? "bg-red-500/30 border-red-400/50" : "bg-purple-500/30 border-purple-400/50"}
       text-white font-semibold text-xs md:text-sm`}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
             >
               <Volume2 className="w-5 h-5" />
               {isRecording ? "Berhenti Merekam" : "Mulai Merekam"}
             </motion.button>
 
+            {/* ✅ Waveform indikator masuk di sini */}
+            {isRecording && (
+              <div className="w-full flex justify-center mt-2">
+                <div className="flex gap-1">
+                  {[...Array(5)].map((_, i) => (
+                    <motion.div
+                      key={i}
+                      className="w-2 h-6 bg-purple-300 rounded-md"
+                      animate={{ scaleY: [0.3, 1.2, 0.3] }}
+                      transition={{
+                        repeat: Infinity,
+                        duration: 1,
+                        delay: i * 0.15,
+                        ease: "easeInOut",
+                      }}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
+            {/* ✅ Tampilkan hasil suara yang diucapkan user */}
             {textInput && (
               <motion.div
-                initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-                className="bg-white/10 border border-white/20 p-3 rounded-lg text-white/90 text-xs md:text-sm"
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="bg-white/10 border border-white/20 p-3 rounded-lg 
+    text-white/90 text-xs md:text-sm"
               >
                 🎙️ Hasil suara: <strong>{textInput}</strong>
               </motion.div>
             )}
 
-            {textInput && !generatedImage && (
-              <motion.button
-                onClick={handleVoiceGenerate}
-                disabled={isLoading}
-                className="w-full flex items-center justify-center gap-2 p-2 rounded-lg
-        bg-blue-500/30 hover:bg-blue-500/40 text-blue-200
-        border border-blue-400/30 disabled:opacity-50"
-              >
-                {isLoading ? "Menghasilkan..." : "Generate Gambar"}
-              </motion.button>
-            )}
+
 
             {generatedImage && (
               <motion.img
                 src={generatedImage}
-                alt="Generated Image"
-                className="w-full h-auto object-contain rounded-xl"
+                className="w-full rounded-xl"
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
               />
             )}
 
-            {generatedImage && (
-              <motion.button
-                onClick={handleVoiceAnalyze}
-                disabled={isLoading}
-                className="w-full flex items-center justify-center gap-2 p-2 rounded-lg bg-green-500/30 hover:bg-green-500/40 text-green-200 border border-green-400/30"
-              >
-                {isLoading ? "Menganalisis..." : "Analisis Gambar"}
-              </motion.button>
-            )}
-
-            {(generatedImage || isLoading || lastResponseText) && (
-              <motion.div
-                className="mt-3 md:mt-4 p-2 md:p-3 rounded-lg bg-white/8 border border-white/20"
-                initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-              >
+            {(output || isLoading) && (
+              <motion.div className="p-3 rounded-lg bg-white/8 border border-white/20 min-h-16">
                 {isLoading ? (
                   <div className="flex items-center gap-2 text-white/70">
                     <Loader className="w-4 h-4 animate-spin" />
@@ -709,11 +755,9 @@ Jangan gunakan simbol, emoji, atau format lain selain teks biasa.`
                 )}
               </motion.div>
             )}
+
           </motion.div>
         )}
-
-
-
 
         {currentScreen === "camera" && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-2 md:space-y-3">
