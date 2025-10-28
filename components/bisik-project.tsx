@@ -165,6 +165,13 @@ Jangan gunakan simbol, emoji, atau format lain selain teks biasa.`
     recognition.onstart = () => {
       setIsRecording(true)
       setOutput("Silahkan bicara...")
+
+      setTimeout(() => {
+        if (isRecording) {
+          stopSpeechRecognition()
+          showError("Waktu maksimal suara 10 detik")
+        }
+      }, 10000)
     }
 
     recognition.onresult = (event: any) => {
@@ -180,6 +187,10 @@ Jangan gunakan simbol, emoji, atau format lain selain teks biasa.`
 
     recognition.onend = () => {
       setIsRecording(false)
+
+      if (!textInput.trim()) {
+        showError("Tidak terdeteksi suara. Coba lagi ya!")
+      }
     }
 
     recognition.start()
@@ -377,10 +388,16 @@ Jangan gunakan simbol, emoji, atau format lain selain teks biasa.`
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (file) {
+      if (file.size > 5 * 1024 * 1024) {
+        showError("Ukuran gambar terlalu besar (maksimal 5 MB)")
+        if (fileInputRef.current) fileInputRef.current.value = ""
+        return
+      }
+
       const reader = new FileReader()
       reader.onload = (event) => {
         setUploadedImage(event.target?.result as string)
-        setOutput("Gambar berhasil diunggah. Klik 'Kirim' untuk menganalisis.")
+        setOutput("Gambar berhasil diunggah!")
       }
       reader.readAsDataURL(file)
     }
@@ -630,7 +647,7 @@ Jangan gunakan simbol, emoji, atau format lain selain teks biasa.`
               whileTap={{ scale: 0.98 }}
             >
               <div className="flex items-start gap-3">
-                <Upload className="w-5 h-5 md:w-6 md:h-6 text-blue-300 flex-shrink-0 mt-1" />
+                <Upload className="w-5 h-5 md:w-6 md:h-6 text-blue-300 flex-shrink-0 mt-1" /> 
                 <div className="flex-1">
                   <h3 className="text-blue-200 font-semibold text-sm md:text-base">Unggah Gambar</h3>
                   <p className="text-blue-100/70 text-xs md:text-sm mt-1">
@@ -859,7 +876,7 @@ Jangan gunakan simbol, emoji, atau format lain selain teks biasa.`
               Kembali
             </motion.button>
             <div className="text-xs md:text-sm text-white/60 bg-white/5 p-2 rounded-lg border border-white/10">
-              Pilih gambar dari perangkat Anda untuk dianalisis
+              Pilih gambar dari perangkat Anda untuk dianalisis (Maksimal 5 MB)
             </div>
             <input ref={fileInputRef} type="file" accept="image/*" onChange={handleFileChange} className="hidden" />
             <motion.button
@@ -923,12 +940,19 @@ Jangan gunakan simbol, emoji, atau format lain selain teks biasa.`
               Kembali
             </motion.button>
             <div className="text-xs md:text-sm text-white/60 bg-white/5 p-2 rounded-lg border border-white/10">
-              Deskripsikan objek atau adegan yang ingin Anda lihat. Contoh: "Kucing berwarna putih"
+              Deskripsikan objek atau adegan yang ingin Anda lihat (Maksimal 50 Karakter). Contoh: "Kucing berwarna putih"
             </div>
             <input
               type="text"
               value={textInput}
-              onChange={(e) => setTextInput(e.target.value)}
+              onChange={(e) => {
+                const v = e.target.value
+                if (v.length > 50) {
+                  showError("Maksimal 50 karakter")
+                  return
+                }
+                setTextInput(v)
+              }}
               placeholder="Isi deskripsi pada box ini"
               className="w-full p-2 rounded-lg bg-white/10 border border-white/20 text-white placeholder-white/50 focus:outline-none focus:border-blue-400 text-xs md:text-sm"
             />
