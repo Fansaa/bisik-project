@@ -505,7 +505,7 @@ Jangan gunakan simbol, emoji, atau format lain selain teks biasa.`
     setIsPlaying(true)
 
     try {
-      const response = await fetch("https://468960b7c870.ngrok-free.app/tts", {
+      const response = await fetch("https://997134e0e974.ngrok-free.app/tts", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
