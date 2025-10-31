@@ -2,15 +2,18 @@
 
 import type React from "react"
 import { useState, useRef, useEffect } from "react"
+import { useRouter } from "next/navigation"
 import { Camera, Upload, Type, Send, Volume2, Square, RotateCcw, Loader, ArrowLeft } from "lucide-react"
+import NextLink from "next/link"
 import { motion } from "motion/react"
 
 const API_KEY = "AIzaSyDnFqvH-qCyLlY6JoTFRxBSuOYeIR0623Q"
 
 type Screen = "start" | "options" | "home" | "camera" | "upload" | "text" | "voice"
 
-export default function BisikProject() {
-  const [currentScreen, setCurrentScreen] = useState<Screen>("start")
+export default function BisikProject({ initialScreen = "start" as Screen }: { initialScreen?: Screen }) {
+  const [currentScreen, setCurrentScreen] = useState<Screen>(initialScreen)
+  const router = useRouter()
   const [isPlaying, setIsPlaying] = useState(false)
   const [output, setOutput] = useState("Hasil akan muncul di sini...")
   const [isLoading, setIsLoading] = useState(false)
@@ -574,8 +577,13 @@ Jangan gunakan simbol, emoji, atau format lain selain teks biasa.`
 
   return (
     <div className="w-full flex flex-col gap-3 md:gap-4">
-      <div className="text-center">
-        <h2 className="text-3xl md:text-4xl font-bold text-white">BISIK</h2>
+      <div className="text-center relative">
+        <h2 className="text-3xl md:text-4xl font-bold text-black">BISIK</h2>
+        <div className="absolute right-0 top-1">
+          <NextLink href="/" className="text-xs md:text-sm text-black/60 hover:text-black underline">
+            Ke Halaman Utama
+          </NextLink>
+        </div>
         {errorMessage && (
           <motion.div
             initial={{ opacity: 0, y: -8 }}
@@ -589,48 +597,32 @@ Jangan gunakan simbol, emoji, atau format lain selain teks biasa.`
       </div>
 
       <div className="w-full">
-        {currentScreen === "start" && (
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-4">
-            <p className="text-center text-white/70 text-sm md:text-base">
-              Selamat datang di BISIK! Aplikasi ini membantu anak-anak memahami dunia di sekitar mereka.
-            </p>
-            <motion.button
-              onClick={() => setCurrentScreen("options")}
-              className="w-full p-3 md:p-4 rounded-xl bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white font-bold text-sm md:text-base transition-all border border-white/20"
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-            >
-              Mulai
-            </motion.button>
-          </motion.div>
-        )}
-
         {currentScreen === "options" && (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-3 md:space-y-4">
             <motion.button
-              onClick={() => setCurrentScreen("start")}
-              className="flex items-center justify-center gap-2 p-2 rounded-lg bg-white/10 hover:bg-white/20 text-white font-semibold text-xs md:text-sm border border-white/20"
+              onClick={() => router.push("/")}
+              className="flex items-center justify-center gap-2 p-2 rounded-lg bg-black/5 hover:bg-black/10 text-black font-semibold text-xs md:text-sm border border-black/10"
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
             >
               <ArrowLeft className="w-4 h-4" />
               Kembali
             </motion.button>
-            <p className="text-center text-white/70 text-xs md:text-sm mb-3 md:mb-4">
+            <p className="text-center text-black/70 text-xs md:text-sm mb-3 md:mb-4">
               Pilih metode input yang ingin Anda gunakan
             </p>
 
             <motion.div
               onClick={openCamera}
-              className="p-3 md:p-4 rounded-xl bg-green-500/20 hover:bg-green-500/30 border border-green-400/30 hover:border-green-400/50 cursor-pointer transition-all"
+              className="p-3 md:p-4 rounded-xl bg-green-50 border border-green-200 hover:shadow-sm cursor-pointer transition-all"
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
             >
               <div className="flex items-start gap-3">
-                <Camera className="w-5 h-5 md:w-6 md:h-6 text-green-300 flex-shrink-0 mt-1" />
+                <Camera className="w-5 h-5 md:w-6 md:h-6 text-green-600 flex-shrink-0 mt-1" />
                 <div className="flex-1">
-                  <h3 className="text-green-200 font-semibold text-sm md:text-base">Gunakan Kamera</h3>
-                  <p className="text-green-100/70 text-xs md:text-sm mt-1">
+                  <h3 className="text-green-900 font-semibold text-sm md:text-base">Gunakan Kamera</h3>
+                  <p className="text-green-900/80 text-xs md:text-sm mt-1">
                     Arahkan kamera ke objek yang ingin dianalisis untuk mendapatkan penjelasan secara real-time.
                   </p>
                 </div>
@@ -642,15 +634,15 @@ Jangan gunakan simbol, emoji, atau format lain selain teks biasa.`
                 setCurrentScreen("upload")
                 setTimeout(() => fileInputRef.current?.click(), 0)
               }}
-              className="p-3 md:p-4 rounded-xl bg-blue-500/20 hover:bg-blue-500/30 border border-blue-400/30 hover:border-blue-400/50 cursor-pointer transition-all"
+              className="p-3 md:p-4 rounded-xl bg-blue-50 border border-blue-200 hover:shadow-sm cursor-pointer transition-all"
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
             >
               <div className="flex items-start gap-3">
-                <Upload className="w-5 h-5 md:w-6 md:h-6 text-blue-300 flex-shrink-0 mt-1" /> 
+                <Upload className="w-5 h-5 md:w-6 md:h-6 text-blue-600 flex-shrink-0 mt-1" /> 
                 <div className="flex-1">
-                  <h3 className="text-blue-200 font-semibold text-sm md:text-base">Unggah Gambar</h3>
-                  <p className="text-blue-100/70 text-xs md:text-sm mt-1">
+                  <h3 className="text-blue-900 font-semibold text-sm md:text-base">Unggah Gambar</h3>
+                  <p className="text-blue-900/80 text-xs md:text-sm mt-1">
                     Pilih gambar dari perangkat Anda untuk dianalisis dan dijelaskan dengan detail.
                   </p>
                 </div>
@@ -659,15 +651,15 @@ Jangan gunakan simbol, emoji, atau format lain selain teks biasa.`
 
             <motion.div
               onClick={() => setCurrentScreen("text")}
-              className="p-3 md:p-4 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 border border-amber-400/30 hover:border-amber-400/50 cursor-pointer transition-all"
+              className="p-3 md:p-4 rounded-xl bg-amber-50 border border-amber-200 hover:shadow-sm cursor-pointer transition-all"
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
             >
               <div className="flex items-start gap-3">
-                <Type className="w-5 h-5 md:w-6 md:h-6 text-amber-300 flex-shrink-0 mt-1" />
+                <Type className="w-5 h-5 md:w-6 md:h-6 text-amber-600 flex-shrink-0 mt-1" />
                 <div className="flex-1">
-                  <h3 className="text-amber-200 font-semibold text-sm md:text-base">Masukkan Teks</h3>
-                  <p className="text-amber-100/70 text-xs md:text-sm mt-1">
+                  <h3 className="text-amber-900 font-semibold text-sm md:text-base">Masukkan Teks</h3>
+                  <p className="text-amber-900/80 text-xs md:text-sm mt-1">
                     Deskripsikan objek atau adegan yang ingin Anda lihat, dan kami akan menghasilkan gambar untuk Anda.
                   </p>
                 </div>
@@ -676,15 +668,15 @@ Jangan gunakan simbol, emoji, atau format lain selain teks biasa.`
 
             <motion.div
               onClick={() => setCurrentScreen("voice")}
-              className="p-3 md:p-4 rounded-xl bg-purple-500/20 hover:bg-purple-500/30 border border-purple-400/30 hover:border-purple-400/50 cursor-pointer transition-all"
+              className="p-3 md:p-4 rounded-xl bg-purple-50 border border-purple-200 hover:shadow-sm cursor-pointer transition-all"
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
             >
               <div className="flex items-start gap-3">
-                <Volume2 className="w-5 h-5 md:w-6 md:h-6 text-purple-300 flex-shrink-0 mt-1" />
+                <Volume2 className="w-5 h-5 md:w-6 md:h-6 text-purple-600 flex-shrink-0 mt-1" />
                 <div className="flex-1">
-                  <h3 className="text-purple-200 font-semibold text-sm md:text-base">Gunakan Suara</h3>
-                  <p className="text-purple-100/70 text-xs md:text-sm mt-1">
+                  <h3 className="text-purple-900 font-semibold text-sm md:text-base">Gunakan Suara</h3>
+                  <p className="text-purple-900/80 text-xs md:text-sm mt-1">
                     Ucapkan deskripsi objek untuk menghasilkan gambar dan penjelasannya.
                   </p>
                 </div>
@@ -700,20 +692,17 @@ Jangan gunakan simbol, emoji, atau format lain selain teks biasa.`
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-3">
 
             <motion.button onClick={goBackToOptions}
-              className="flex items-center justify-center gap-2 p-2 rounded-lg bg-white/10 hover:bg-white/20 text-white
-      font-semibold text-xs md:text-sm border border-white/20">
+              className="flex items-center justify-center gap-2 p-2 rounded-lg bg-black/5 hover:bg-black/10 text-black font-semibold text-xs md:text-sm border border-black/10">
               <ArrowLeft className="w-4 h-4" /> Kembali
             </motion.button>
 
-            <div className="text-xs md:text-sm text-white/60 bg-white/5 p-2 rounded-lg border border-white/10">
+            <div className="text-xs md:text-sm text-black/70 bg-black/5 p-2 rounded-lg border border-black/10">
               Klik “Mulai Merekam”, ucapkan deskripsi objek.
             </div>
 
             <motion.button
               onClick={isRecording ? stopSpeechRecognition : startSpeechRecognition}
-              className={`w-full flex items-center justify-center gap-2 p-3 rounded-xl
-      border ${isRecording ? "bg-red-500/30 border-red-400/50" : "bg-purple-500/30 border-purple-400/50"}
-      text-white font-semibold text-xs md:text-sm`}
+              className={`w-full flex items-center justify-center gap-2 p-3 rounded-xl border ${isRecording ? "bg-red-100 border-red-200 text-red-900" : "bg-purple-100 border-purple-200 text-purple-900"}`}
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
             >
@@ -746,8 +735,7 @@ Jangan gunakan simbol, emoji, atau format lain selain teks biasa.`
               <motion.div
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
-                className="bg-white/10 border border-white/20 p-3 rounded-lg 
-    text-white/90 text-xs md:text-sm"
+                className="bg-black/5 border border-black/10 p-3 rounded-lg text-black/80 text-xs md:text-sm"
               >
                 🎙️ Hasil suara: <strong>{textInput}</strong>
               </motion.div>
@@ -765,14 +753,14 @@ Jangan gunakan simbol, emoji, atau format lain selain teks biasa.`
             )}
 
             {(output || isLoading) && (
-              <motion.div className="p-3 rounded-lg bg-white/8 border border-white/20 min-h-16">
+              <motion.div className="p-3 rounded-lg bg-black/5 border border-black/10 min-h-16">
                 {isLoading ? (
-                  <div className="flex items-center gap-2 text-white/70">
+                  <div className="flex items-center gap-2 text-black/70">
                     <Loader className="w-4 h-4 animate-spin" />
                     <span className="text-xs md:text-sm">{output}</span>
                   </div>
                 ) : (
-                  <p className="text-white/90 text-xs md:text-sm whitespace-pre-wrap">{output}</p>
+                  <p className="text-black/80 text-xs md:text-sm whitespace-pre-wrap">{output}</p>
                 )}
               </motion.div>
             )}
@@ -784,14 +772,14 @@ Jangan gunakan simbol, emoji, atau format lain selain teks biasa.`
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-2 md:space-y-3">
             <motion.button
               onClick={goBackToOptions}
-              className="flex items-center justify-center gap-2 p-2 rounded-lg bg-white/10 hover:bg-white/20 text-white font-semibold text-xs md:text-sm border border-white/20"
+              className="flex items-center justify-center gap-2 p-2 rounded-lg bg-black/5 hover:bg-black/10 text-black font-semibold text-xs md:text-sm border border-black/10"
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
             >
               <ArrowLeft className="w-4 h-4" />
               Kembali
             </motion.button>
-            <div className="text-xs md:text-sm text-white/60 bg-white/5 p-2 rounded-lg border border-white/10">
+            <div className="text-xs md:text-sm text-black/70 bg-black/5 p-2 rounded-lg border border-black/10">
               Arahkan kamera ke objek yang ingin dianalisis, kemudian klik "Ambil Gambar"
             </div>
             <div className="relative rounded-xl overflow-hidden bg-black/40 w-full">
@@ -814,7 +802,7 @@ Jangan gunakan simbol, emoji, atau format lain selain teks biasa.`
             <div className="flex gap-2">
               <motion.button
                 onClick={capturePhoto}
-                className="flex-1 flex items-center justify-center gap-2 p-2 rounded-lg bg-amber-500/30 hover:bg-amber-500/40 text-amber-200 font-semibold text-xs md:text-sm border border-amber-400/30"
+                className="flex-1 flex items-center justify-center gap-2 p-2 rounded-lg bg-amber-100 hover:bg-amber-200 text-amber-900 font-semibold text-xs md:text-sm border border-amber-200"
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
               >
@@ -823,7 +811,7 @@ Jangan gunakan simbol, emoji, atau format lain selain teks biasa.`
               </motion.button>
               <motion.button
                 onClick={closeCamera}
-                className="flex-1 flex items-center justify-center gap-2 p-2 rounded-lg bg-red-500/30 hover:bg-red-500/40 text-red-200 font-semibold text-xs md:text-sm border border-red-400/30"
+                className="flex-1 flex items-center justify-center gap-2 p-2 rounded-lg bg-red-100 hover:bg-red-200 text-red-900 font-semibold text-xs md:text-sm border border-red-200"
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
               >
@@ -835,7 +823,7 @@ Jangan gunakan simbol, emoji, atau format lain selain teks biasa.`
               <motion.button
                 onClick={handleCameraSend}
                 disabled={isLoading}
-                className="w-full flex items-center justify-center gap-2 p-2 rounded-lg bg-blue-500/30 hover:bg-blue-500/40 text-blue-200 font-semibold text-xs md:text-sm disabled:opacity-50 border border-blue-400/30"
+                className="w-full flex items-center justify-center gap-2 p-2 rounded-lg bg-blue-100 hover:bg-blue-200 text-blue-900 font-semibold text-xs md:text-sm disabled:opacity-50 border border-blue-200"
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
               >
@@ -846,18 +834,18 @@ Jangan gunakan simbol, emoji, atau format lain selain teks biasa.`
 
             {(capturedImage || isLoading || lastResponseText) && (
               <motion.div
-                className="mt-3 md:mt-4 p-2 md:p-3 rounded-lg bg-white/8 border border-white/20 min-h-16"
+                className="mt-3 md:mt-4 p-2 md:p-3 rounded-lg bg-black/5 border border-black/10 min-h-16"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.2 }}
               >
                 {isLoading ? (
-                  <div className="flex items-center gap-2 text-white/70">
+                  <div className="flex items-center gap-2 text-black/70">
                     <Loader className="w-4 h-4 animate-spin" />
                     <span className="text-xs md:text-sm">{output}</span>
                   </div>
                 ) : (
-                  <p className="text-white/90 text-xs md:text-sm leading-relaxed whitespace-pre-wrap">{output}</p>
+                  <p className="text-black/80 text-xs md:text-sm leading-relaxed whitespace-pre-wrap">{output}</p>
                 )}
               </motion.div>
             )}
@@ -868,20 +856,20 @@ Jangan gunakan simbol, emoji, atau format lain selain teks biasa.`
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-2 md:space-y-3">
             <motion.button
               onClick={goBackToOptions}
-              className="flex items-center justify-center gap-2 p-2 rounded-lg bg-white/10 hover:bg-white/20 text-white font-semibold text-xs md:text-sm border border-white/20"
+              className="flex items-center justify-center gap-2 p-2 rounded-lg bg-black/5 hover:bg-black/10 text-black font-semibold text-xs md:text-sm border border-black/10"
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
             >
               <ArrowLeft className="w-4 h-4" />
               Kembali
             </motion.button>
-            <div className="text-xs md:text-sm text-white/60 bg-white/5 p-2 rounded-lg border border-white/10">
+            <div className="text-xs md:text-sm text-black/70 bg-black/5 p-2 rounded-lg border border-black/10">
               Pilih gambar dari perangkat Anda untuk dianalisis (Maksimal 5 MB)
             </div>
             <input ref={fileInputRef} type="file" accept="image/*" onChange={handleFileChange} className="hidden" />
             <motion.button
               onClick={() => fileInputRef.current?.click()}
-              className="w-full p-3 rounded-xl border-2 border-dashed border-white/30 hover:border-white/50 text-white/70 hover:text-white transition-colors text-xs md:text-sm"
+              className="w-full p-3 rounded-xl border-2 border-dashed border-black/20 hover:border-black/30 text-black/60 hover:text-black transition-colors text-xs md:text-sm"
               whileHover={{ scale: 1.02 }}
             >
               Klik untuk memilih gambar
@@ -899,7 +887,7 @@ Jangan gunakan simbol, emoji, atau format lain selain teks biasa.`
               <motion.button
                 onClick={handleUploadSend}
                 disabled={isLoading}
-                className="w-full flex items-center justify-center gap-2 p-2 rounded-lg bg-blue-500/30 hover:bg-blue-500/40 text-blue-200 font-semibold text-xs md:text-sm disabled:opacity-50 border border-blue-400/30"
+                className="w-full flex items-center justify-center gap-2 p-2 rounded-lg bg-blue-100 hover:bg-blue-200 text-blue-900 font-semibold text-xs md:text-sm disabled:opacity-50 border border-blue-200"
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
               >
@@ -910,18 +898,18 @@ Jangan gunakan simbol, emoji, atau format lain selain teks biasa.`
 
             {(uploadedImage || isLoading || lastResponseText) && (
               <motion.div
-                className="mt-3 md:mt-4 p-2 md:p-3 rounded-lg bg-white/8 border border-white/20 min-h-16"
+                className="mt-3 md:mt-4 p-2 md:p-3 rounded-lg bg-black/5 border border-black/10 min-h-16"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.2 }}
               >
                 {isLoading ? (
-                  <div className="flex items-center gap-2 text-white/70">
+                  <div className="flex items-center gap-2 text-black/70">
                     <Loader className="w-4 h-4 animate-spin" />
                     <span className="text-xs md:text-sm">{output}</span>
                   </div>
                 ) : (
-                  <p className="text-white/90 text-xs md:text-sm leading-relaxed whitespace-pre-wrap">{output}</p>
+                  <p className="text-black/80 text-xs md:text-sm leading-relaxed whitespace-pre-wrap">{output}</p>
                 )}
               </motion.div>
             )}
@@ -932,14 +920,14 @@ Jangan gunakan simbol, emoji, atau format lain selain teks biasa.`
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-2 md:space-y-3">
             <motion.button
               onClick={goBackToOptions}
-              className="flex items-center justify-center gap-2 p-2 rounded-lg bg-white/10 hover:bg-white/20 text-white font-semibold text-xs md:text-sm border border-white/20"
+              className="flex items-center justify-center gap-2 p-2 rounded-lg bg-black/5 hover:bg-black/10 text-black font-semibold text-xs md:text-sm border border-black/10"
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
             >
               <ArrowLeft className="w-4 h-4" />
               Kembali
             </motion.button>
-            <div className="text-xs md:text-sm text-white/60 bg-white/5 p-2 rounded-lg border border-white/10">
+            <div className="text-xs md:text-sm text-black/70 bg-black/5 p-2 rounded-lg border border-black/10">
               Deskripsikan objek atau adegan yang ingin Anda lihat (Maksimal 50 Karakter). Contoh: "Kucing berwarna putih"
             </div>
             <input
@@ -954,7 +942,7 @@ Jangan gunakan simbol, emoji, atau format lain selain teks biasa.`
                 setTextInput(v)
               }}
               placeholder="Isi deskripsi pada box ini"
-              className="w-full p-2 rounded-lg bg-white/10 border border-white/20 text-white placeholder-white/50 focus:outline-none focus:border-blue-400 text-xs md:text-sm"
+              className="w-full p-2 rounded-lg bg-black/5 border border-black/10 text-black placeholder-black/50 focus:outline-none focus:border-blue-400 text-xs md:text-sm"
             />
             {generatedImage && (
               <motion.img
@@ -968,7 +956,7 @@ Jangan gunakan simbol, emoji, atau format lain selain teks biasa.`
             <motion.button
               onClick={handleGenerateText}
               disabled={isLoading || !textInput.trim()}
-              className="w-full flex items-center justify-center gap-2 p-2 rounded-lg bg-blue-500/30 hover:bg-blue-500/40 text-blue-200 font-semibold text-xs md:text-sm disabled:opacity-50 border border-blue-400/30"
+              className="w-full flex items-center justify-center gap-2 p-2 rounded-lg bg-blue-100 hover:bg-blue-200 text-blue-900 font-semibold text-xs md:text-sm disabled:opacity-50 border border-blue-200"
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
             >
@@ -978,18 +966,18 @@ Jangan gunakan simbol, emoji, atau format lain selain teks biasa.`
 
             {(generatedImage || isLoading || lastResponseText) && (
               <motion.div
-                className="mt-3 md:mt-4 p-2 md:p-3 rounded-lg bg-white/8 border border-white/20 min-h-16"
+                className="mt-3 md:mt-4 p-2 md:p-3 rounded-lg bg-black/5 border border-black/10 min-h-16"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.2 }}
               >
                 {isLoading ? (
-                  <div className="flex items-center gap-2 text-white/70">
+                  <div className="flex items-center gap-2 text-black/70">
                     <Loader className="w-4 h-4 animate-spin" />
                     <span className="text-xs md:text-sm">{output}</span>
                   </div>
                 ) : (
-                  <p className="text-white/90 text-xs md:text-sm leading-relaxed whitespace-pre-wrap">{output}</p>
+                  <p className="text-black/80 text-xs md:text-sm leading-relaxed whitespace-pre-wrap">{output}</p>
                 )}
               </motion.div>
             )}
@@ -1002,7 +990,7 @@ Jangan gunakan simbol, emoji, atau format lain selain teks biasa.`
           <motion.button
             onClick={speak}
             disabled={!lastResponseText || isPlaying}
-            className="flex-1 flex items-center justify-center gap-1 md:gap-2 p-2 rounded-lg bg-green-500/30 hover:bg-green-500/40 text-green-200 font-semibold text-xs md:text-sm disabled:opacity-50 border border-green-400/30"
+            className="flex-1 flex items-center justify-center gap-1 md:gap-2 p-2 rounded-lg bg-green-100 hover:bg-green-200 text-green-900 font-semibold text-xs md:text-sm disabled:opacity-50 border border-green-200"
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             aria-label="Bacakan hasil"
@@ -1013,7 +1001,7 @@ Jangan gunakan simbol, emoji, atau format lain selain teks biasa.`
           <motion.button
             onClick={stop}
             disabled={!isPlaying}
-            className="flex-1 flex items-center justify-center gap-1 md:gap-2 p-2 rounded-lg bg-amber-500/30 hover:bg-amber-500/40 text-amber-200 font-semibold text-xs md:text-sm disabled:opacity-50 border border-amber-400/30"
+            className="flex-1 flex items-center justify-center gap-1 md:gap-2 p-2 rounded-lg bg-amber-100 hover:bg-amber-200 text-amber-900 font-semibold text-xs md:text-sm disabled:opacity-50 border border-amber-200"
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             aria-label="Hentikan pemutaran"
@@ -1023,7 +1011,7 @@ Jangan gunakan simbol, emoji, atau format lain selain teks biasa.`
           </motion.button>
           <motion.button
             onClick={reset}
-            className="flex-1 flex items-center justify-center gap-1 md:gap-2 p-2 rounded-lg bg-red-500/30 hover:bg-red-500/40 text-red-200 font-semibold text-xs md:text-sm border border-red-400/30"
+            className="flex-1 flex items-center justify-center gap-1 md:gap-2 p-2 rounded-lg bg-red-100 hover:bg-red-200 text-red-900 font-semibold text-xs md:text-sm border border-red-200"
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             aria-label="Reset aplikasi"
