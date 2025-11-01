@@ -169,7 +169,7 @@ export default function AboutPage() {
       <footer className="mt-12 py-8 border-t border-black/10 bg-white/50 backdrop-blur-sm">
         <div className="max-w-5xl mx-auto text-center">
           <h2 className="text-lg md:text-xl font-semibold text-black mb-6">
-            Telah dipercaya oleh
+            Didukung dan dikembangkan oleh
           </h2>
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 justify-items-center items-center">
