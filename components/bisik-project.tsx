@@ -7,7 +7,7 @@ import { Camera, Upload, Type, Send, Volume2, Square, RotateCcw, Loader, ArrowLe
 import NextLink from "next/link"
 import { motion } from "motion/react"
 
-const API_KEY = "AIzaSyDnFqvH-qCyLlY6JoTFRxBSuOYeIR0623Q"
+const API_KEY = "AIzaSyD6x_2S_2AakKoY6HsVclIqUEschw-No4E"
 
 type Screen = "start" | "options" | "home" | "camera" | "upload" | "text" | "voice"
 
@@ -508,7 +508,7 @@ Jangan gunakan simbol, emoji, atau format lain selain teks biasa.`
     setIsPlaying(true)
 
     try {
-      const response = await fetch("https://997134e0e974.ngrok-free.app/tts", {
+      const response = await fetch("http://192.168.18.7:5000/tts", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

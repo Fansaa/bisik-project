@@ -17,16 +17,18 @@ export default function AboutPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4 }}
         >
-          <div className="flex items-center justify-between">
-            <h1 className="text-3xl md:text-4xl font-bold text-black">Tentang BISIK</h1>
+          <div className="relative text-center mb-4">
             <Link
               href="/"
-              className="flex items-center justify-center gap-2 p-2 rounded-lg bg-black/5 hover:bg-black/10 text-black font-semibold text-xs md:text-sm border border-black/10 transition-all"
+              className="absolute left-0 top-0 flex items-center gap-2 p-2 rounded-lg bg-black/5 hover:bg-black/10 text-black font-semibold text-xs md:text-sm border border-black/10 transition-all"
             >
               <ArrowLeft className="w-4 h-4" />
               <span className="hidden sm:inline">Kembali</span>
             </Link>
+
+            <h1 className="text-3xl md:text-4xl font-bold text-black text-center">Tentang BISIK</h1>
           </div>
+
 
           <div className="mt-6 space-y-4 text-black">
             <div className="flex items-center justify-between">
@@ -163,6 +165,27 @@ export default function AboutPage() {
           </div>
         </motion.div>
       </div>
+      {/* Footer Sponsor */}
+      <footer className="mt-12 py-8 border-t border-black/10 bg-white/50 backdrop-blur-sm">
+        <div className="max-w-5xl mx-auto text-center">
+          <h2 className="text-lg md:text-xl font-semibold text-black mb-6">
+            Telah dipercaya oleh
+          </h2>
+
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 justify-items-center items-center">
+            <img src="/telkom-indonesia.png" alt="Telkom Indonesia" className="h-10 md:h-12 object-contain" />
+            <img src="/ayoberaksi.png" alt="AyoBerAKSI" className="h-10 md:h-12 object-contain" />
+            <img src="/danantara.png" alt="Danantara" className="h-10 md:h-12 object-contain" />
+            <img src="/bisa.png" alt="BISA" className="h-10 md:h-12 object-contain" />
+
+            <img src="/telkom-university.png" alt="Telkom University" className="h-10 md:h-12 object-contain" />
+            <img src="/fte.png" alt="FTE" className="h-10 md:h-12 object-contain" />
+            <img src="/fif.png" alt="FIF" className="h-10 md:h-12 object-contain" />
+            <img src="/fri.png" alt="FRI" className="h-10 md:h-12 object-contain" />
+          </div>
+        </div>
+      </footer>
+
     </main>
   )
 }
