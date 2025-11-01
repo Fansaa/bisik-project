@@ -7,7 +7,7 @@ import { Camera, Upload, Type, Send, Volume2, Square, RotateCcw, Loader, ArrowLe
 import NextLink from "next/link"
 import { motion } from "motion/react"
 
-const API_KEY = "AIzaSyD6x_2S_2AakKoY6HsVclIqUEschw-No4E"
+const API_KEY = "AIzaSyBbe-cI2bRNG1Oo7cF9bQboA9ItuYzs7g4"
 
 type Screen = "start" | "options" | "home" | "camera" | "upload" | "text" | "voice"
 
@@ -93,7 +93,7 @@ Jangan gunakan simbol, emoji, atau format lain selain teks biasa.`
           height: { ideal: 720 },
         },
         audio: false,
-      }
+      } 
 
       const stream = await navigator.mediaDevices.getUserMedia(constraints)
       streamRef.current = stream
