@@ -173,15 +173,19 @@ export default function AboutPage() {
           </h2>
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 justify-items-center items-center">
-            <img src="/telkom-indonesia.png" alt="Telkom Indonesia" className="h-10 md:h-12 object-contain" />
-            <img src="/ayoberaksi.png" alt="AyoBerAKSI" className="h-10 md:h-12 object-contain" />
-            <img src="/danantara.png" alt="Danantara" className="h-10 md:h-12 object-contain" />
-            <img src="/bisa.png" alt="BISA" className="h-10 md:h-12 object-contain" />
+            {/* Semua logo menggunakan ukuran yang sama dengan /fte.png */}
+            <img src="/telkom-indonesia.png" alt="Telkom Indonesia" className="h-25 w-auto max-w-[100px] md:max-w-[120px] object-contain" />
+            <img src="/ayoberaksi.png" alt="AyoBerAKSI" className="h-17 w-auto max-w-[100px] md:max-w-[200px] object-contain" />
+            <img src="/danantara.png" alt="Danantara" className="h-36 w-auto max-w-[1000px] md:max-w-[1200px] object-contain" />
+            <img src="/bisa.png" alt="BISA" className="h-14 w-auto max-w-[100px] md:max-w-[120px] object-contain" />
+            
+            <img src="/telkom-university.png" alt="Telkom University" className="h-15 w-auto max-w-[1000px] md:max-w-[1200px] object-contain" />
+            <img src="/fte.png" alt="FTE" className="h-12 w-auto max-w-[10000px] md:max-w-[1100px] object-contain" />
+            <img src="/fif.png" alt="FIF" className="h-14 w-auto max-w-[10000px] md:max-w-[1500px] object-contain" />
+            <img src="/fri.png" alt="FRI" className="h-14 w-auto max-w-[10000px] md:max-w-[1500px] object-contain" />
 
-            <img src="/telkom-university.png" alt="Telkom University" className="h-10 md:h-12 object-contain" />
-            <img src="/fte.png" alt="FTE" className="h-10 md:h-12 object-contain" />
-            <img src="/fif.png" alt="FIF" className="h-10 md:h-12 object-contain" />
-            <img src="/fri.png" alt="FRI" className="h-10 md:h-12 object-contain" />
+
+
           </div>
         </div>
       </footer>
